@@ -4,6 +4,8 @@ using std::cin;
 using std::cout;
 using std::endl;
 
+#define delimiter "\n----------------------------------------\n"
+
 #define HUMAN_TAKE_PARAMETERS const std::string& last_name, const std::string& first_name, int age
 #define HUMAN_GIVE_PARAMETERS  last_name,  first_name, age
 
@@ -50,12 +52,12 @@ public:
 
 	~Human()
 	{
-		cout << "HDconstructor:\t" << this << endl;
+		cout << "HDestructor:\t" << this << endl;
 	}
 
 	// Methods:
 
-	void info()const 
+	virtual void info()const
 	{
 		cout << last_name << " " << first_name << " " << age << endl;
 	}
@@ -80,7 +82,7 @@ public:
 	{
 		return group;
 	}
-	double get_rating()const 
+	double get_rating()const
 	{
 		return rating;
 	}
@@ -109,7 +111,7 @@ public:
 
 	Student
 	(
-		HUMAN_TAKE_PARAMETERS,SRUDENT_TAKE_PARAMETERS):Human(HUMAN_GIVE_PARAMETERS)
+		HUMAN_TAKE_PARAMETERS, SRUDENT_TAKE_PARAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
 	{
 		set_speciality(speciality);
 		set_group(group);
@@ -124,7 +126,7 @@ public:
 
 	//Methods:
 
-	void info()const
+	void info() const override
 	{
 		Human::info();
 		cout << speciality << " " << group << " " << rating << " " << attendance << endl;
@@ -160,31 +162,75 @@ public:
 
 	Teacher
 	(
-		HUMAN_TAKE_PARAMETERS,TEACHER_TAKE_PARAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
-			{
-				set_speciality(speciality);
-	            set_experience(experience);
-			    cout << "TConstructor:\t" << this << endl;
-			}
+		HUMAN_TAKE_PARAMETERS, TEACHER_TAKE_PARAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
+	{
+		set_speciality(speciality);
+		set_experience(experience);
+		cout << "TConstructor:\t" << this << endl;
+	}
 	~Teacher()
 	{
 		cout << "TDestructor:\t" << this << endl;
 	}
-	void info()const
+	void info()const override
 	{
 		Human::info();
-		cout << speciality << " " << experience  << endl;
+		cout << speciality << " " << experience << endl;
 	}
 
-	
 
-			
-	
+
+
+
 };
+
+#define GRADUATE_TAKE_PARAMETERS const std::string& subject
+#define GRADUATE_GIVE_PARAMETERS subject
+
+class Graduate : public Student
+{
+
+	std::string subject;
+public:
+	const std::string& get_subject()const
+	{
+		return subject;
+	}
+	void set_subject(const std::string& subject)
+	{
+		this->subject = subject;
+	}
+
+	//constructors
+
+	Graduate(HUMAN_TAKE_PARAMETERS, SRUDENT_TAKE_PARAMETERS, GRADUATE_TAKE_PARAMETERS)
+		:Student(HUMAN_GIVE_PARAMETERS, SRUDENT_GIVE_PARAMETERS)
+	{
+		set_subject(subject);
+		cout << "GConstructors:\t" << this << endl;
+	}
+	~Graduate()
+	{
+		cout << "SDestructor:\t" << this << endl;
+	}
+	//Methods:
+	void info()
+		const override
+	{
+		Student::info();
+		cout << get_subject() << endl;
+	}
+};
+
+//#define INHERITANCE
+#define POLUMORPHISM
+
 
 void main() {
 
 	setlocale(LC_ALL, "");
+
+#ifdef INHERITANCE
 
 	Human human("Montana", "Antonio", 25);
 	human.info();
@@ -194,4 +240,29 @@ void main() {
 
 	Teacher teacher("white", "walter", 50, "Chemestry", 25);
 	teacher.info();
+
+	Graduate graduate("Schereder", "Hank", 40, "Criminalistic", "OBN", 40, 50, "How to catch...");
+    graduate.info();
+
+# endif//INHERITANCE
+
+	Human* group[] =
+	{
+	  new Student ("Pincman", "Jessie", 22, "Chemistry", "WW_220", 95, 98),
+	  new Teacher("white", "walter", 50, "Chemestry", 25),
+	  new Graduate ("Schereder", "Hank", 40, "Criminalistic", "OBN", 40, 50, "How to catch..."),
+	  new Student ("Vercetty", "Tommy", 22, "Theft", "Vise", 95, 99),
+	  new Teacher("Diaz", "Ricardo", 50, "Weapon distribution", 20)
+	};
+
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		group[i]->info();
+		cout << delimiter << endl;
+	}
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		delete group[i];
+		cout << delimiter << endl;
+	}
 }
