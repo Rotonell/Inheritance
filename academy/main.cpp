@@ -278,8 +278,54 @@ void Save(Human* group[], const int n, const std::string& filename)
 	system(cmd.c_str()); //Метод c_str возвращает строку в виде массива символов (char*);
 }
 
+Human** Load(const std::string& filename, int& n)
+{
+	Human** group = nullptr;
+	std::ifstream fin(filename);
+	if (fin.is_open())
+	{
+		//1) Подсчитываем колличество объектов в файле
+		n = 0;
+		std::string buffer;
+		while (!fin.eof())
+		{
+			std::getline(fin, buffer);
+			if (buffer.size() <32)continue;
+			n++;
+		}
+		cout << "Колличество объектов: " << n << endl;
+
+		//2) Выделяем память под объекты
+		group = new Human * [n];
+
+		//3) возвращаемся в начало файля для того, чтобы прочитать из него сами объекты
+		cout << "Position " << fin.tellg() << endl; //метод tellg() возвращает текущую  get- позицию на чтение . -1 значит end file.
+		fin.clear();
+		fin.seekg(0);//Метод seekg(0), переводит курсор гет курсор на чтение в указанную позицию;
+		cout << "Position " << fin.tellg() << endl;
+	}
+	else
+	{
+		std::cerr << "Error: file not found" << endl;
+	}
+
+	//) закрываем файл
+	fin.close();
+
+	return group;
+}
+
+void Clear(Human* group[], const int n)
+{
+	for (int i = 0; i < n; i++)
+	{
+		delete group[i];
+		cout << delimiter << endl;
+	}
+}
+
 //#define INHERITANCE
-#define POLYMORPHISM //(poly - много, morphis - форма)
+//#define POLYMORPHISM //(poly - много, morphis - форма)
 
 void main()
 {
@@ -335,6 +381,9 @@ void main()
 	}
 #endif // POLYMORPHISM
 
-
+	int n = 0;
+	Human** group = Load("group.txt", n);
+	Print(group, n);
+	Clear(group, n);
 
 }
