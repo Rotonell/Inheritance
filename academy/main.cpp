@@ -83,6 +83,10 @@ public:
 		os << age;
 		return os;
 	}
+	virtual std::istream& scan(std::istream& is)
+	{
+		return is >> last_name >> first_name >> age;
+	}
 };
 
 int Human::count = 0; // Инициализация статической переменной
@@ -90,6 +94,11 @@ int Human::count = 0; // Инициализация статической переменной
 std::ostream& operator<<(std::ostream& os, const Human& obj)
 {
 	return obj.info(os);
+}
+
+std::istream& operator>>(std::istream& is, Human& obj)
+{
+	return obj.scan(is);
 }
 
 #define STUDENT_TAKE_PARAMETERS const std::string& speciality, const std::string& group, double rating, double attendance
@@ -167,6 +176,24 @@ public:
 		os << attendance;
 		return os;
 	}
+
+	std::istream& scan(std::istream& is)override
+	{
+		Human::scan(is);
+		char sz_buffer[SPECIALITY_WIDTH + 1] = {};
+		is.read(sz_buffer, SPECIALITY_WIDTH);
+
+		for (int i = SPECIALITY_WIDTH-1; sz_buffer[i] == ' '; i--)sz_buffer[i] = 0;
+
+		while (sz_buffer[0] == ' ')
+			for (int i = 0; sz_buffer[i]; i++)sz_buffer[i] = sz_buffer[i + 1] ;
+
+		speciality = sz_buffer;//сохраняем специальность в соответствующее поле
+
+		is >> group >> rating >> attendance;
+		return is;
+	}
+
 };
 
 #define TEACHER_TAKE_PARAMETERS const std::string& speciality, int experience
@@ -217,6 +244,22 @@ public:
 		os << experience;
 		return os;
 	}
+	std::istream& scan(std::istream& is)override
+	{
+		Human::scan(is);
+		char sz_buffer[SPECIALITY_WIDTH + 1] = {};
+		is.read(sz_buffer, SPECIALITY_WIDTH);
+
+		for (int i = SPECIALITY_WIDTH-1; sz_buffer[i] == ' '; i--)sz_buffer[i] = 0;
+
+		while (sz_buffer[0] == ' ')
+			for (int i = 0; sz_buffer[i]; i++)sz_buffer[i]=sz_buffer[i + 1];
+
+		speciality = sz_buffer;//сохраняем специальность в соответствующее поле
+
+		is >> experience;
+		return is;
+	}
 };
 
 #define GRADUATE_TAKE_PARAMETERS const std::string& subject
@@ -252,6 +295,12 @@ public:
 	{
 		return Student::info(os) << " " << get_subject();
 	}
+
+	std::istream& scan(std::istream& is) override
+	{
+		std::getline(is, subject);
+		return is;
+	}
 };
 
 void Print(Human* group[], const int n)
@@ -278,6 +327,16 @@ void Save(Human* group[], const int n, const std::string& filename)
 	system(cmd.c_str()); //Метод c_str возвращает строку в виде массива символов (char*);
 }
 
+Human* HumanFactory(const std::string& type)
+{
+	Human* human = nullptr;
+	 if (strstr(type.c_str(), "Human"))human = new Human("", "", 0);
+	else if (strstr(type.c_str(), "Student"))human = new Student("", "", 0, "", "", 0, 0);
+	else if (strstr(type.c_str(), "Graduate"))human = new Graduate("", "", 0, "", "", 0, 0, "");
+	else if (strstr(type.c_str(), "Teacher"))human = new Teacher("", "", 0, "", 0);
+	return human;
+}
+
 Human** Load(const std::string& filename, int& n)
 {
 	Human** group = nullptr;
@@ -290,7 +349,7 @@ Human** Load(const std::string& filename, int& n)
 		while (!fin.eof())
 		{
 			std::getline(fin, buffer);
-			if (buffer.size() <32)continue;
+			if (buffer.size() < 32)continue;
 			n++;
 		}
 		cout << "Колличество объектов: " << n << endl;
@@ -298,11 +357,22 @@ Human** Load(const std::string& filename, int& n)
 		//2) Выделяем память под объекты
 		group = new Human * [n];
 
-		//3) возвращаемся в начало файля для того, чтобы прочитать из него сами объекты
+		//3) возвращаемся в начало файла для того, чтобы прочитать из него сами объекты
 		cout << "Position " << fin.tellg() << endl; //метод tellg() возвращает текущую  get- позицию на чтение . -1 значит end file.
 		fin.clear();
 		fin.seekg(0);//Метод seekg(0), переводит курсор гет курсор на чтение в указанную позицию;
 		cout << "Position " << fin.tellg() << endl;
+
+		//4) Загружаем объекты из файла:
+		for (int i=0; !fin.eof();)
+		{
+			std::string buffer;
+			std::getline(fin, buffer, ':');
+			if (buffer.size() < 5)continue;
+			group[i] = HumanFactory(buffer);
+			fin >> *group[i];
+			i++;
+		}
 	}
 	else
 	{
