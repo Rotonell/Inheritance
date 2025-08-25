@@ -1,92 +1,274 @@
 #include<iostream>
+#include<Windows.h>
 using namespace std;
 
-enum Color
+namespace Geometry
 {
-	Red = 0x000000FF,
-	Green = 0x0000FF00,
-	Blue = 0x00FF0000,
-	Yellow = 0x0000FFFF,
-	Orange = 0x0000A5FF,
-	White = 0x00FFFFFF,
-	SomeColor
-};
+	enum Color
+	{
+		Red = 0x000000FF,
+		Green = 0x0000FF00,
+		Blue = 0x00FF0000,
+		Yellow = 0x0000FFFF,
+		Orange = 0x0000A5FF,
+		White = 0x00FFFFFF,
+		SomeColor
+	};
 
-class Shape
-{
-	Color color;
-public:
-	Shape(Color color) :color(color) {/*Тело конструктора*/ }
-	virtual double get_area()const = 0;
-	virtual double get_perimeter()const = 0;
-	virtual void draw()const = 0;
-	virtual void info()const
-	{
-		cout << "Площадь фигуры: " << get_area() << endl;
-		cout << "Периметр фигуры: " << get_perimeter() << endl;
-		draw();
-	}
-};
 
-class Square :public Shape
-{
-	double side;
-public:
-	Square(double side, Color color) : Shape(color)
+#define SHAPE_TAKE_PARAMETERS int start_x, int start_y, int line_width, Color color
+#define SHAPE_GIVE_PARAMETERS  start_x,  start_y, line_width,  color
+
+
+	class Shape
 	{
-		set_side(side);
-	}
-	double get_side()const
-	{
-		return side;
-	}
-	void set_side(double side)
-	{
-		this->side = side;
-	}
-	double get_area()const override
-	{
-		return side * side;
-	}
-	double get_perimeter()const override
-	{
-		return side * 4;
-	}
-	void draw()const override
-	{
-		for (int i = 0; i < side; i++)
+	protected:
+		Color color;
+		int line_width;
+		int start_x;
+		int start_y;
+	public:
+		static const int MIN_START_X = 100;
+		static const int MIN_START_Y = 100;
+		static const int MAX_START_X = 1000;
+		static const int MAX_START_Y = 600;
+		static const int MIN_LINE_WIDTH = 1;
+		static const int MAX_LINE_WIDTH = 16;
+		static const int MIN_SIZE = 32;
+		static const int MAX_SIZE = 768;
+
+		Shape(SHAPE_TAKE_PARAMETERS) :color(color) 
 		{
-			for (int j = 0; j < side; j++)
+			/*Тело конструктора*/
+			set_start_y(start_y);
+			set_start_x(start_x);
+			set_line_width(line_width);
+		}
+		void set_start_x(int start_x)
+		{
+			this->start_x =
+				start_x<MIN_START_X ? MIN_START_X :
+				start_x>MAX_START_X ? MAX_START_X:
+			    start_x;
+		}
+		void set_start_y(int start_y)
+		{
+			this->start_y =
+				start_y<MIN_START_Y ? MIN_START_Y :
+				start_y>MAX_START_Y ? MAX_START_Y:
+			    start_y;
+		}
+		void set_line_width(int line_width)
+		{
+			this->line_width =
+				line_width < MIN_LINE_WIDTH ? MIN_LINE_WIDTH :
+				line_width > MAX_LINE_WIDTH ? MAX_LINE_WIDTH :
+				line_width;
+		}
+		int get_start_x()const
+		{
+			return start_x;
+		}
+		int get_start_y()const
+		{
+			return start_y;
+		}
+		int get_line_width()const
+		{
+			return line_width;
+		}
+
+		virtual double get_area()const = 0;
+		virtual double get_perimeter()const = 0;
+		virtual void draw()const = 0;
+		virtual void info()const
+		{
+			cout << "Площадь фигуры: " << get_area() << endl;
+			cout << "Периметр фигуры: " << get_perimeter() << endl;
+			draw();
+		}
+	};
+
+	/*class Square :public Shape
+	{
+		double side;
+	public:
+		Square(double side, SHAPE_TAKE_PARAMETERS) : Shape(SHAPE_GIVE_PARAMETERS)
+		{
+			set_side(side);
+		}
+		double get_side()const
+		{
+			return side;
+		}
+		void set_side(double side)
+		{
+			this->side = side;
+		}
+		double get_area()const override
+		{
+			return side * side;
+		}
+		double get_perimeter()const override
+		{
+			return side * 4;
+		}
+		void draw()const override
+		{
+			for (int i = 0; i < side; i++)
 			{
-				cout << "* ";
+				for (int j = 0; j < side; j++)
+				{
+					cout << "* ";
+				}
+				cout << endl;
 			}
 			cout << endl;
 		}
-		cout << endl;
-	}
-	void info()const override
-	{
-		cout << typeid(*this).name() << endl;
-		cout << "Длина стороны квадрата: " << get_side() << endl;
-		Shape::info();
-	}
+		void info()const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "Длина стороны квадрата: " << get_side() << endl;
+			Shape::info();
+		}
 
-};
+	};*/
+
+	class Rectangle :public Shape
+	{
+		double width, heigth;
+	public:
+		Rectangle(double width, double heigth, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS)
+		{
+			set_width(width);
+			set_heigth(heigth);
+		}
+		double get_width()const
+		{
+			return width;
+		}
+		double get_heigth()const
+		{
+			return heigth;
+		}
+		void set_width(double width)
+		{
+			this->width = width;
+		}
+		void set_heigth(double heigth)
+		{
+			this->heigth = heigth;
+		}
+
+		// площадь прямоугольника 
+		double get_area()const override
+		{
+			return width * heigth;
+		}
+		// периметр
+		double get_perimeter()const override
+		{
+			return 2 * (width + heigth);
+		}
+		void draw()const override
+		{
+			/*for (int i = 0; i < heigth; i++)
+			{
+				for (int j = 0; j < width; j++)
+				{
+					cout << "* ";
+				}
+				cout << endl;
+			}
+			cout << endl;*/
+
+			HWND hwnd = GetConsoleWindow();
+
+			HDC hdc = GetDC(hwnd);
+
+			HPEN hPen = CreatePen(PS_SOLID, 5, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+
+			::Rectangle(hdc, start_x, start_y, start_x+width, start_y+heigth);
+
+			DeleteObject(hBrush);
+			DeleteObject(hPen);
+
+			ReleaseDC(hwnd, hdc);
+		}
+		void info() const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "высота: " << get_heigth() << endl;
+			cout << "ширина: " << get_width() << endl;
+			Shape::info();
+		}
+	};
+	class Square :public Rectangle
+	{
+	public:
+		Square(int side, SHAPE_TAKE_PARAMETERS) :Rectangle(side, side, SHAPE_GIVE_PARAMETERS) {}
+	};
+}
+
+//class Triangle :public Shape
+//{
+//	double side;
+//public:
+//	Triangle(double side, Color color): Shape (color)
+//	{
+//		set_side(side);
+//	}
+//	double get_side()const
+//	{
+//		return side;
+//	}
+//	void set_side(double side)
+//	{
+//		this->side = side;
+//	}
+//	//Площадь треугольника
+//	double get_area()const override
+//	{
+//
+//	}
+//
+//};
+
 
 void main()
 {
 	setlocale(LC_ALL, "");
 
-	cout << hex << Color::SomeColor << endl;
+	cout << hex << Geometry::Color::SomeColor << endl;
 
 	//Shape shape;
 
-	Square square(5, Color::Red);
-	cout << "Длинна стороны квадрата: " << square.get_side() << endl;
+	Geometry::Square square(5,100,100,1, Geometry::Color::Red);
+	/*cout << "Длинна стороны квадрата: " << square.get_side() << endl;
 	cout << "Площадь квадрата: " << square.get_area() << endl;
 	cout << "Периметр квадрата: " << square.get_perimeter() << endl;
 	square.draw();
-	cout << "\n--------------------------------------------\n" << endl;
+	cout << "\n--------------------------------------------\n" << endl;*/
 	square.info();
+	/*cout << "\n--------------------------------------------\n" << endl;*/
+
+	Geometry::Rectangle rectangle(150, 100,550,100,2, Geometry::Color::Green);
+	cout << "Ширина прямоугольника: " << rectangle.get_width() << endl;
+	cout << "Высота прямоугольника: " << rectangle.get_heigth() << endl;
+	cout << "Площадь прямоугольника: " << rectangle.get_area() << endl;
+	cout << "Периметр прямоугольника: " << rectangle.get_perimeter() << endl;
+	rectangle.draw();
+	cout << "\n--------------------------------------------\n" << endl;
+	rectangle.info();
+
+	while (true)
+	{
+		rectangle.draw();
+		square.draw();
+	}
 
 }
