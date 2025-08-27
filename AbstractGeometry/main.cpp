@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include<iostream>
 #include<Windows.h>
 using namespace std;
@@ -65,6 +66,13 @@ namespace Geometry
 				line_width > MAX_LINE_WIDTH ? MAX_LINE_WIDTH :
 				line_width;
 		}
+		int filter_size(int size)const
+		{
+			return
+				size <MIN_SIZE ? MIN_SIZE :
+				size > MAX_SIZE ? MAX_SIZE :
+				size;
+		}
 		int get_start_x()const
 		{
 			return start_x;
@@ -77,6 +85,7 @@ namespace Geometry
 		{
 			return line_width;
 		}
+	
 
 		virtual double get_area()const = 0;
 		virtual double get_perimeter()const = 0;
@@ -153,11 +162,11 @@ namespace Geometry
 		}
 		void set_width(double width)
 		{
-			this->width = width;
+			this->width = filter_size(width);
 		}
 		void set_heigth(double heigth)
 		{
-			this->heigth = heigth;
+			this->heigth = filter_size(heigth);
 		}
 
 		// площадь прямоугольника 
@@ -212,31 +221,114 @@ namespace Geometry
 	public:
 		Square(int side, SHAPE_TAKE_PARAMETERS) :Rectangle(side, side, SHAPE_GIVE_PARAMETERS) {}
 	};
+
+	class Circle :public Shape
+	{
+		double radius;
+	public:
+		Circle(double radius, SHAPE_TAKE_PARAMETERS) : Shape(SHAPE_GIVE_PARAMETERS)
+		{
+			set_radius(radius);
+		}
+		void set_radius(double redius)
+		{
+			this->radius = filter_size(redius);
+		}
+		double get_radius()const
+		{
+			return radius;
+		}
+		double get_diameter()const
+		{
+			return 2 * radius;
+		}
+		double get_area()const override
+		{
+			return M_PI * radius * radius;
+		}
+		double get_perimeter()const override
+		{
+			return M_PI * get_diameter();
+		}
+		void draw()const override
+		{
+			HWND hwnd = GetConsoleWindow();
+			HDC hdc = GetDC(hwnd);
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+
+			::Ellipse(hdc, start_x, start_y, start_x + get_diameter(), start_y + get_diameter());
+
+			DeleteObject(hBrush);
+			DeleteObject(hPen);
+			ReleaseDC(hwnd, hdc);
+		}
+
+	};
+
+	class Triangle :public Shape
+	{
+	public:
+		Triangle(SHAPE_TAKE_PARAMETERS) : Shape(SHAPE_GIVE_PARAMETERS) {}
+		virtual double get_heigth()const = 0;
+	};
+	class EquilateralTriangle :public Triangle
+	{
+		double side;
+	public:
+		EquilateralTriangle(double side, SHAPE_TAKE_PARAMETERS) :Triangle(SHAPE_GIVE_PARAMETERS)
+		{
+			set_side(side);
+		}
+		void set_side(double side)
+		{
+			this->side = filter_size(side);
+		}
+		double get_side()const
+		{
+			return side;
+		}
+		double get_heigth()const override
+		{
+			return sqrt(pow(side, 2) - (side / 2, 2));
+		}
+		double get_area()const override
+		{
+			return  side * get_heigth() / 2;
+		}
+		double get_perimeter() const override
+		{
+			return 3 * side;
+		}
+		void draw()const override
+		{
+			HWND hwnd = GetConsoleWindow();
+			HDC hdc = GetDC(hwnd);
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+
+			const POINT vertices[] =
+			{
+				{start_x, start_y + get_heigth()},
+				{start_x + side, start_y + get_heigth()},
+				{ start_x + side / 2, start_y}
+			};
+
+			::Polygon(hdc, vertices, 3);
+
+			DeleteObject(hBrush);
+			DeleteObject(hPen);
+			ReleaseDC(hwnd, hdc);
+		}
+	};
 }
 
-//class Triangle :public Shape
-//{
-//	double side;
-//public:
-//	Triangle(double side, Color color): Shape (color)
-//	{
-//		set_side(side);
-//	}
-//	double get_side()const
-//	{
-//		return side;
-//	}
-//	void set_side(double side)
-//	{
-//		this->side = side;
-//	}
-//	//Площадь треугольника
-//	double get_area()const override
-//	{
-//
-//	}
-//
-//};
 
 
 void main()
@@ -264,6 +356,12 @@ void main()
 	rectangle.draw();
 	cout << "\n--------------------------------------------\n" << endl;
 	rectangle.info();
+
+	Geometry::Circle circle(50, 800, 200, 1, Geometry::Color::Yellow);
+	circle.info();
+
+	Geometry::EquilateralTriangle e_triangle(50, 550, 350, 32, Geometry::Color::Blue);
+	e_triangle.info();
 
 	while (true)
 	{
