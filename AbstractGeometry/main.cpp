@@ -201,7 +201,7 @@ namespace Geometry
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
-			::Rectangle(hdc, start_x, start_y, start_x+width, start_y+heigth);
+			::DrawFunction(hdc, start_x, start_y, start_x+width, start_y+heigth);
 
 			DeleteObject(hBrush);
 			DeleteObject(hPen);
